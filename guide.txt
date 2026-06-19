@@ -1,0 +1,113 @@
+========================================================================
+                  DISCORD GITHUB BOT SETUP GUIDE (STEP-BY-STEP)
+========================================================================
+
+Follow these exact steps to get your Discord bot up and running, connected
+to your GitHub repository, and posting tag notifications in a channel.
+
+------------------------------------------------------------------------
+STEP 1: Create the Discord Bot & Application
+------------------------------------------------------------------------
+1. Open your web browser and go to the Discord Developer Portal:
+   https://discord.com/developers/applications
+
+2. Log in with your Discord account (if you aren't already).
+
+3. Click the "New Application" button in the top-right corner.
+   - Give it a name (for example: "GitHub Push Bot").
+   - Click "Create".
+
+4. Go to the "Bot" tab on the left menu:
+   - Click the "Add Bot" button (if visible).
+   - Under "Token", click "Reset Token" and approve the security check.
+   - COPY the long token string immediately (e.g. MTkyOD...etc.). Keep it secret!
+   - Open your project's ".env" file and paste it there:
+     DISCORD_TOKEN=your_copied_token_here
+
+5. Still on the "Bot" tab, scroll down to "Privileged Gateway Intents":
+   - Ensure that the intents are enabled (for this bot, standard guilds intents
+     are fine, but check "Message Content Intent" if you ever want your bot
+     to read channel commands in the future).
+
+------------------------------------------------------------------------
+STEP 2: Invite the Bot to your Server
+------------------------------------------------------------------------
+1. Go to the "OAuth2" tab on the left menu, then select "URL Generator" under it.
+
+2. In the "Scopes" section, check the box next to:
+   [x] bot
+
+3. In the "Bot Permissions" section (which appears at the bottom), check:
+   [x] Send Messages
+   [x] Embed Links
+
+4. At the bottom of the page, a URL will be generated. Copy this URL.
+
+5. Paste this URL into a new browser tab. Select your Discord server and authorize
+   to add the bot to your channel.
+
+------------------------------------------------------------------------
+STEP 3: Get your Discord Channel ID
+------------------------------------------------------------------------
+1. In Discord, go to User Settings -> Advanced.
+2. Enable "Developer Mode" (turn the toggle on).
+3. Close Settings. Right-click the text channel where you want notifications to be sent.
+4. Click "Copy Channel ID".
+5. Open your ".env" file and paste it there:
+   DISCORD_CHANNEL_ID=your_copied_channel_id_here
+
+------------------------------------------------------------------------
+STEP 4: Set up Local Port Forwarding (for Webhooks)
+------------------------------------------------------------------------
+GitHub needs to send a request to a public address when you push. If you run the 
+bot on your local computer, GitHub cannot reach it directly. You need ngrok to 
+bridge it:
+
+1. Download and install ngrok for free: https://ngrok.com/
+2. Sign up for a free account: https://dashboard.ngrok.com/signup
+3. Get your Authtoken here: https://dashboard.ngrok.com/get-started/your-authtoken
+4. Install your authtoken by running this in your terminal:
+   ngrok config add-authtoken YOUR_AUTHTOKEN_HERE
+
+5. Run this in your terminal to start the tunnel:
+   ngrok http 3000
+
+6. ngrok will show a screen. Find the line that starts with "Forwarding" and ends
+   with ".ngrok-free.app". Copy that whole URL (it should start with https://).
+   Example: https://abcd-12-34-56.ngrok-free.app
+
+------------------------------------------------------------------------
+STEP 5: Run the Bot!
+------------------------------------------------------------------------
+1. Open your project folder in your command prompt/terminal.
+2. Run the command:
+   node index.js
+   (If you get a PowerShell script execution error, you can also try: npm.cmd start)
+
+3. You should see:
+   [Server] Webhook server running on port 3000
+   [Discord] Attempting to connect to Discord...
+   [Discord] Bot is ready and logged in as: GitHub Push Bot#xxxx
+
+   Keep this terminal window open and running.
+
+------------------------------------------------------------------------
+STEP 6: Configure the Webhook in GitHub
+------------------------------------------------------------------------
+1. Open your GitHub Repository on github.com.
+2. Click the "Settings" tab at the top.
+3. Click "Webhooks" on the left sidebar, then click the "Add webhook" button.
+4. Fill in the form:
+   - Payload URL: Paste your ngrok URL and add /webhook at the end.
+     Example: https://abcd-12-34-56.ngrok-free.app/webhook
+   - Content type: Choose "application/json"
+   - Secret: Type a secure password/passphrase of your choice (e.g. my_super_secret_webhook_key).
+     Put this same key in your ".env" file:
+     GITHUB_WEBHOOK_SECRET=my_super_secret_webhook_key
+   - Which events would you like to trigger this webhook?
+     Select "Just the push event."
+5. Click "Add webhook". GitHub will send a test "ping" event to your server, which will succeed because your bot is active.
+
+6. Make a git push to your repository. The webhook will fire, and your Discord Bot will automatically send an embed with commit descriptions to your channel.
+   tagging "@everyone" (or whichever role/tag you specified in ROLE_TO_TAG).
+========================================================================
