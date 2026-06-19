@@ -1,0 +1,37 @@
+========================================================================
+             WEBHOOK SECRET CONFIGURATION GUIDE (FOR YOUR FRIEND)
+========================================================================
+
+You can change the GITHUB_WEBHOOK_SECRET of this bot at any time using 
+a web browser, without needing to touch any code!
+
+------------------------------------------------------------------------
+STEP 1: Open the Config Portal
+------------------------------------------------------------------------
+Open this URL in your web browser:
+👉 https://wisplike-tolerable-eladia.ngrok-free.dev/config
+
+*(Note: If the bot is hosted somewhere else or restarted, replace the domain
+with the current URL, followed by /config)*
+
+------------------------------------------------------------------------
+STEP 2: Update the Secret on the Bot
+------------------------------------------------------------------------
+1. On the page, type your new secret under "GITHUB_WEBHOOK_SECRET".
+2. Click "Update Secret".
+3. You should see a green success message: "✓ Secret updated successfully!".
+   - The bot immediately updates its security keys in memory and writes
+     the new secret into the .env file automatically.
+
+------------------------------------------------------------------------
+STEP 3: Update the Secret on GitHub
+------------------------------------------------------------------------
+1. Go to your GitHub repository settings page:
+   https://github.com/m4rioxyz-debug/47Studio/settings/hooks
+
+2. Edit your webhook.
+3. Under "Secret", type the EXACT same secret you entered in Step 2.
+4. Click "Update webhook" at the bottom to save.
+
+Done! The bot and GitHub are now linked with the new secret key.
+========================================================================
