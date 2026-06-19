@@ -2,6 +2,12 @@ import { Client, GatewayIntentBits, EmbedBuilder } from 'discord.js';
 import express from 'express';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Load environment variables
 dotenv.config();
@@ -42,6 +48,9 @@ app.use(
     },
   })
 );
+
+// Parse form-submitted data for configuration page
+app.use(express.urlencoded({ extended: true }));
 
 // Middleware to verify GitHub webhook signatures
 function verifyGithubSignature(req, res, next) {
@@ -181,6 +190,145 @@ app.post('/webhook', verifyGithubSignature, async (req, res) => {
   } catch (error) {
     console.error('[Discord] Error sending message to Discord channel:', error);
     return res.status(500).send('Failed to post message to Discord');
+  }
+});
+
+// Function to update key-value in .env file
+function updateEnvFile(key, value) {
+  const envPath = path.join(__dirname, '.env');
+  if (!fs.existsSync(envPath)) {
+    fs.writeFileSync(envPath, `${key}=${value}\n`);
+    return;
+  }
+  let content = fs.readFileSync(envPath, 'utf8');
+  const regex = new RegExp(`^${key}=.*$`, 'm');
+  if (regex.test(content)) {
+    content = content.replace(regex, `${key}=${value}`);
+  } else {
+    content += `\n${key}=${value}`;
+  }
+  fs.writeFileSync(envPath, content, 'utf8');
+}
+
+// Inline HTML Template for the config page
+const configHtmlTemplate = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>47Studio Config Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Outfit:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: #000000;
+      color: #ffffff;
+      font-family: 'Outfit', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .config-card {
+      background: #0a0a0a;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 2.5rem;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.8);
+      text-align: center;
+    }
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.75rem;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.02em;
+    }
+    label {
+      display: block;
+      text-align: left;
+      font-size: 0.85rem;
+      color: #a1a1aa;
+      margin-bottom: 0.5rem;
+    }
+    input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+    input:focus {
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    button {
+      width: 100%;
+      background: #ffffff;
+      color: #000000;
+      border: none;
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #eeeeee;
+    }
+    .status {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #10b981;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="config-card">
+    <h1>47Studio Config</h1>
+    <form method="POST" action="/config">
+      <label for="secret">GITHUB_WEBHOOK_SECRET</label>
+      <input type="password" id="secret" name="secret" placeholder="Enter new secret" required>
+      <button type="submit">Update Secret</button>
+    </form>
+    <!-- STATUS_PLACEHOLDER -->
+  </div>
+</body>
+</html>`;
+
+// GET Config page
+app.get('/config', (req, res) => {
+  res.send(configHtmlTemplate.replace('<!-- STATUS_PLACEHOLDER -->', ''));
+});
+
+// POST update secret
+app.post('/config', (req, res) => {
+  const newSecret = req.body.secret;
+  if (!newSecret) {
+    return res.status(400).send('Secret is required');
+  }
+
+  try {
+    updateEnvFile('GITHUB_WEBHOOK_SECRET', newSecret);
+    process.env.GITHUB_WEBHOOK_SECRET = newSecret;
+    console.log('[Config] GITHUB_WEBHOOK_SECRET updated successfully via config UI.');
+
+    const successHtml = configHtmlTemplate.replace(
+      '<!-- STATUS_PLACEHOLDER -->',
+      '<div class="status">✓ Secret updated successfully!</div>'
+    );
+    res.send(successHtml);
+  } catch (error) {
+    console.error('[Config] Error updating secret:', error);
+    res.status(500).send('Failed to update secret.');
   }
 });
 
