@@ -4,7 +4,7 @@ Welcome to **47Studio**. This repository contains the coming soon landing page f
 
 ## Features Included
 
-- **Coming Soon Landing Page**: A premium, responsive dark-mode landing page with animated gradients, custom styling, and layout.
+- **Coming Soon Landing Page**: A premium, responsive dark-mode landing page located in the `47` folder, featuring animated gradients, custom styling, and layout.
 - **Discord GitHub Webhook Bot**: Integration server using Express and `discord.js` to post push notifications directly to a Discord channel.
 
 ## Quick Start
