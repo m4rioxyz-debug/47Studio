@@ -40,6 +40,29 @@
         Crafting premium digital products, high-end interfaces, and immersive web solutions. Something extraordinary is shaping up.
       </p>
 
+      <!-- Countdown Timer -->
+      <div class="countdown animate-slide-up-delayed">
+        <div class="countdown-item">
+          <span class="countdown-number" id="days">00</span>
+          <span class="countdown-label">Days</span>
+        </div>
+        <div class="countdown-item-separator">:</div>
+        <div class="countdown-item">
+          <span class="countdown-number" id="hours">00</span>
+          <span class="countdown-label">Hours</span>
+        </div>
+        <div class="countdown-item-separator">:</div>
+        <div class="countdown-item">
+          <span class="countdown-number" id="minutes">00</span>
+          <span class="countdown-label">Minutes</span>
+        </div>
+        <div class="countdown-item-separator">:</div>
+        <div class="countdown-item">
+          <span class="countdown-number" id="seconds">00</span>
+          <span class="countdown-label">Seconds</span>
+        </div>
+      </div>
+
       <!-- Email signup form -->
       <form class="signup-form animate-fade-in-delayed" onsubmit="event.preventDefault(); alert('Thank you! We will keep you updated.');">
         <div class="input-wrapper">
@@ -72,5 +95,32 @@
     </footer>
   </main>
 
+  <script>
+    // Target date: July 1, 2026 00:00:00
+    const targetDate = new Date("July 1, 2026 00:00:00").getTime();
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const difference = targetDate - now;
+
+      if (difference <= 0) {
+        document.querySelector(".countdown").innerHTML = "<div class='launched'>STUDIO IS LIVE</div>";
+        return;
+      }
+
+      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+      document.getElementById("days").innerText = String(days).padStart(2, '0');
+      document.getElementById("hours").innerText = String(hours).padStart(2, '0');
+      document.getElementById("minutes").innerText = String(minutes).padStart(2, '0');
+      document.getElementById("seconds").innerText = String(seconds).padStart(2, '0');
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+  </script>
 </body>
 </html>
